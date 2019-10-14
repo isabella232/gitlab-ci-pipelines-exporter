@@ -31,23 +31,11 @@ test: ## Run the tests against the codebase
 
 .PHONY: install
 install: ## Build and install locally the binary (dev purpose)
-	go build .
+	go mod download
 
 .PHONY: build
 build: ## Build the binaries
-	goreleaser release --snapshot --skip-publish --rm-dist
-
-.PHONY: build-linux-amd64
-build-linux-amd64: ## Build the binaries
-	goreleaser release --snapshot --skip-publish --rm-dist -f .goreleaser.linux-amd64.yml
-
-.PHONY: release
-release: ## Build & release the binaries
-	goreleaser release --rm-dist
-
-.PHONY: publish-coveralls
-publish-coveralls: setup ## Publish coverage results on coveralls
-	goveralls -service drone.io -coverprofile=coverage.out
+	go build -o release/gitlab-ci-exporter .
 
 .PHONY: clean
 clean: ## Remove binary if it exists

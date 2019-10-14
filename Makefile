@@ -35,7 +35,7 @@ install: ## Build and install locally the binary (dev purpose)
 
 .PHONY: build
 build: ## Build the binaries
-	go build -o release/gitlab-ci-exporter .
+	go build -o release/gitlab-ci-pipelines-exporter .
 
 .PHONY: clean
 clean: ## Remove binary if it exists

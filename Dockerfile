@@ -6,7 +6,7 @@ FROM scratch
 WORKDIR /
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-ADD release/gitlab-ci-exporter /bin/
+ADD release/gitlab-ci-pipelines-exporter /bin/
 EXPOSE 8080
 
-ENTRYPOINT ["/bin/gitlab-ci-exporter"]
+ENTRYPOINT ["/bin/gitlab-ci-pipelines-exporter"]

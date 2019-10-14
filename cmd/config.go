@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -10,8 +11,8 @@ import (
 // Config represents what can be defined as a yaml config file
 type Config struct {
 	Gitlab struct {
-		URL           string `yaml:"url"`             // The URL of the GitLab server/api (default to https://gitlab.com)
-		Token         string `yaml:"token"`           // Token to use to authenticate against the API
+		URL           string `yaml:"url"` // The URL of the GitLab server/api (default to https://gitlab.com)
+		Token         string // Token to use to authenticate against the API
 		HealthURL     string `yaml:"health_url"`      // The URL of the GitLab server/api health endpoint (default to /users/sign_in which is publicly available on gitlab.com)
 		SkipTLSVerify bool   `yaml:"skip_tls_verify"` // Whether to validate TLS certificates or not
 	}
@@ -67,6 +68,12 @@ func (cfg *Config) Parse(path string) error {
 	if len(cfg.Projects) < 1 && len(cfg.Wildcards) < 1 {
 		return fmt.Errorf("You need to configure at least one project/wildcard to poll, none given")
 	}
+
+	token := os.Getenv("GITLAB_TOKEN")
+	if token == "" {
+		return fmt.Errorf("GITLAB_TOKEN must be set.")
+	}
+	cfg.Gitlab.Token = token
 
 	// Defining defaults polling intervals
 	if cfg.ProjectsPollingIntervalSeconds == 0 {

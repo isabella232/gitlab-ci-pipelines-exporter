@@ -4,6 +4,10 @@ FILES         := $(shell git ls-files '*.go')
 REPOSITORY    := mvisonneau/$(NAME)
 .DEFAULT_GOAL := help
 
+
+OS ?= linux
+ARCH ?= amd64
+
 export GO111MODULE=on
 
 .PHONY: setup
@@ -35,7 +39,8 @@ install: ## Build and install locally the binary (dev purpose)
 
 .PHONY: build
 build: ## Build the binaries
-	go build -o release/gitlab-ci-pipelines-exporter .
+	GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags '-extldflags "-static" -X github.com/zapier/gitlab-ci-pipelines-exporter/version.VersionDev=build.'${DRONE_BUILD_NUMBER} -o release/gitlab-ci-pipelines-exporter-$(OS)-$(ARCH) .
+	cp release/gitlab-ci-pipelines-exporter-$(OS)-$(ARCH) release/gitlab-ci-pipelines-exporter
 
 .PHONY: clean
 clean: ## Remove binary if it exists

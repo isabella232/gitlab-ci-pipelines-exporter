@@ -69,11 +69,7 @@ func (cfg *Config) Parse(path string) error {
 		return fmt.Errorf("You need to configure at least one project/wildcard to poll, none given")
 	}
 
-	token := os.Getenv("GITLAB_TOKEN")
-	if token == "" {
-		return fmt.Errorf("GITLAB_TOKEN must be set.")
-	}
-	cfg.Gitlab.Token = token
+	cfg.Gitlab.Token = os.Getenv("GITLAB_TOKEN")
 
 	// Defining defaults polling intervals
 	if cfg.ProjectsPollingIntervalSeconds == 0 {

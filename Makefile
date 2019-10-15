@@ -4,6 +4,10 @@ FILES         := $(shell git ls-files '*.go')
 REPOSITORY    := mvisonneau/$(NAME)
 .DEFAULT_GOAL := help
 
+
+OS ?= linux
+ARCH ?= amd64
+
 export GO111MODULE=on
 
 .PHONY: setup
@@ -31,23 +35,12 @@ test: ## Run the tests against the codebase
 
 .PHONY: install
 install: ## Build and install locally the binary (dev purpose)
-	go build .
+	go mod download
 
 .PHONY: build
 build: ## Build the binaries
-	goreleaser release --snapshot --skip-publish --rm-dist
-
-.PHONY: build-linux-amd64
-build-linux-amd64: ## Build the binaries
-	goreleaser release --snapshot --skip-publish --rm-dist -f .goreleaser.linux-amd64.yml
-
-.PHONY: release
-release: ## Build & release the binaries
-	goreleaser release --rm-dist
-
-.PHONY: publish-coveralls
-publish-coveralls: setup ## Publish coverage results on coveralls
-	goveralls -service drone.io -coverprofile=coverage.out
+	GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags '-extldflags "-static" -X github.com/zapier/gitlab-ci-pipelines-exporter/version.VersionDev=build.'${DRONE_BUILD_NUMBER} -o release/gitlab-ci-pipelines-exporter-$(OS)-$(ARCH) .
+	cp release/gitlab-ci-pipelines-exporter-$(OS)-$(ARCH) release/gitlab-ci-pipelines-exporter
 
 .PHONY: clean
 clean: ## Remove binary if it exists

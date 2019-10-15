@@ -1,31 +1,12 @@
-##
-# BUILD CONTAINER
-##
+FROM alpine:3.8 as alpine
 
-FROM goreleaser/goreleaser:v0.118.0 as builder
+RUN apk add -U --no-cache ca-certificates
 
-WORKDIR /build
-
-COPY . .
-RUN \
-apk add --no-cache make ca-certificates ;\
-make build-linux-amd64
-
-##
-# RELEASE CONTAINER
-##
-
-FROM busybox:1.31-glibc
-
+FROM scratch
 WORKDIR /
+COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /build/dist/gitlab-ci-pipelines-exporter_linux_amd64/gitlab-ci-pipelines-exporter /usr/local/bin/
-
-# Run as nobody user
-USER 65534
-
+ADD release/gitlab-ci-pipelines-exporter /bin/
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/gitlab-ci-pipelines-exporter"]
-CMD [""]
+ENTRYPOINT ["/bin/gitlab-ci-pipelines-exporter"]

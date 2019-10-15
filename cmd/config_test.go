@@ -66,7 +66,6 @@ func TestParseValidConfig(t *testing.T) {
 ---
 gitlab:
   url: https://gitlab.example.com
-  token: xrN14n9-ywvAFxxxxxx
   health_url: https://gitlab.example.com/-/health
   skip_tls_verify: true
 
@@ -89,10 +88,14 @@ wildcards:
     search: 'bar'
 `)
 
+	ot := os.Getenv("GITLAB_TOKEN")
+	os.Setenv("GITLAB_TOKEN", "xrN14n9-ywvAFxxxxxx")
+
 	// Reset config var before parsing
 	cfg = &Config{}
 
 	err = cfg.Parse(f.Name())
+	os.Setenv("GITLAB_TOKEN", ot)
 	if err != nil {
 		t.Fatalf("Did not expect an error, got %s", err.Error())
 	}
@@ -100,7 +103,7 @@ wildcards:
 	expectedCfg := Config{
 		Gitlab: struct {
 			URL           string "yaml:\"url\""
-			Token         string "yaml:\"token\""
+			Token         string
 			HealthURL     string "yaml:\"health_url\""
 			SkipTLSVerify bool   "yaml:\"skip_tls_verify\""
 		}{
@@ -171,7 +174,7 @@ projects:
 	expectedCfg := Config{
 		Gitlab: struct {
 			URL           string "yaml:\"url\""
-			Token         string "yaml:\"token\""
+			Token         string
 			HealthURL     string "yaml:\"health_url\""
 			SkipTLSVerify bool   "yaml:\"skip_tls_verify\""
 		}{

@@ -1,0 +1,74 @@
+image: golang:1.12
+
+.pull-cache: &pull-cache
+  cache:
+    policy: pull
+    paths:
+      - vendor
+
+stages:
+  - install
+  - test
+  - build
+  - docker
+  - deploy
+
+install:
+  stage: install
+  script:
+    - go mod download
+  cache:
+    paths:
+      - vendor
+
+test:
+  stage: test
+  script:
+    - make test
+
+lint:
+  stage: test
+  script:
+    - make lint
+
+lint:
+  stage: test
+  script:
+    - make build
+
+build:
+  <<: *pull-cache
+  script:
+    - make build
+  artifacts:
+    paths:
+      - release/*
+
+.docker-build: &docker-build
+  <<: *pull-cache
+  image: docker:stable
+  stage: build
+  before_script: []
+  dependencies:
+    - build
+  script:
+    - docker build -f ${DOCKERFILE} -t $ECR_IMAGE:${CI_COMMIT_SHA:0:8} .
+    - docker push $ECR_IMAGE:${CI_COMMIT_SHA:0:8}
+
+docker:exporter:
+  <<: *docker-build
+  variables:
+    ECR_IMAGE: 996097627176.dkr.ecr.us-east-1.amazonaws.com/gitlab-ci-pipelines-exporter
+    DOCKERFILE: Dockerfile
+
+deploy:tooling:
+  stage: deploy
+  before_script: []
+  image:
+    name: 996097627176.dkr.ecr.us-east-1.amazonaws.com/deploy-bot-cli:develop
+    entrypoint: [""]
+  variables:
+    ENVIRONMENT: tooling
+  when: manual
+  script:
+    - /bin/deploy-bot-cli update-tag --tag "${CI_COMMIT_SHA:0:8}" --env ${ENVIRONMENT} --namespace monitoring --app gitlab-ci-pipelines-exporter --host deploy-bot.k8s.zapier.com
